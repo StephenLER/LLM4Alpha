@@ -1,0 +1,141 @@
+任务提示：为 Apple 的股票价格生成预测性 Alpha 信号
+
+目标：
+使用以下数据生成公式化的 alpha 信号，预测 Apple 的股票价格：
+
+1. 股票特征（例如：收盘价、开盘价、最高价、最低价、成交量）。
+2. 技术指标（例如：RSI、各种移动平均线、MACD、布林带、动量、OBV）。
+
+输入数据：
+
+你将获得一个 pandas.DataFrame，行表示交易日，列包括：
+
+- 股票特征：Open, High, Low, Close, Volume
+- 技术指标：SMA_5, SMA_20, EMA_10, MOM_3, MOM_10, RSI_14, MACD, MACD_Signal, BB_Lower, BB_Upper, OBV
+
+该 DataFrame 已对大部分列进行了 z-score 标准化。
+
+下面是该 DataFrame 的 JSON 格式样本（最后 2 行），字段 "Date" 是交易日期：
+
+```json
+[
+  {
+    "Date": "2024-05-07",
+    "Open": 1.522908170446336,
+    "High": 1.514069372216893,
+    "Low": 1.5179518774055734,
+    "Close": 181.542,
+    "Volume": -0.5846498578808335,
+    "SMA_5": 1.4282031132035182,
+    "SMA_20": 1.3320005704389566,
+    "EMA_10": 1.3946215738887082,
+    "MOM_3": 2.722722086349929,
+    "MOM_10": 2.485371473339507,
+    "RSI_14": 0.6427518308529763,
+    "MACD": 0.6665708506807471,
+    "MACD_Signal": -0.2368626127488882,
+    "BB_Lower": 1.3092762393839597,
+    "BB_Upper": 1.349412440290628,
+    "OBV": 0.8543284044993561
+  },
+  {
+    "Date": "2024-05-08",
+    "Open": 1.512377294282923,
+    "High": 1.4822640885954557,
+    "Low": 1.5202504676692137,
+    "Close": 181.881,
+    "Volume": -1.1512205098354524,
+    "SMA_5": 1.475399025062203,
+    "SMA_20": 1.3451557779870753,
+    "EMA_10": 1.41684737217678,
+    "MOM_3": -0.2629606978550259,
+    "MOM_10": 2.184964894361667,
+    "RSI_14": 0.6713851481157156,
+    "MACD": 0.8977049099508108,
+    "MACD_Signal": 0.0021265969665704,
+    "BB_Lower": 1.3073725372499234,
+    "BB_Upper": 1.3760321946481446,
+    "OBV": 0.8760232308483528
+  }
+]
+列说明：
+Stock Features:
+- Open: basic OHLCV-related feature (price or volume).
+- High: basic OHLCV-related feature (price or volume).
+- Low: basic OHLCV-related feature (price or volume).
+- Close: basic OHLCV-related feature (price or volume).
+- Volume: basic OHLCV-related feature (price or volume).
+
+Technical Indicators:
+- SMA_5: simple moving average of Close.
+- SMA_20: simple moving average of Close.
+- EMA_10: exponential moving average of Close.
+- MOM_3: price momentum over a short rolling window.
+- MOM_10: price momentum over a short rolling window.
+- RSI_14: Relative Strength Index (overbought/oversold oscillator).
+- MACD: MACD line (trend/momentum indicator).
+- MACD_Signal: signal line of MACD indicator.
+- BB_Lower: lower band of Bollinger Bands (volatility).
+- BB_Upper: upper band of Bollinger Bands (volatility).
+- OBV: On-Balance Volume (volume-based trend).
+
+要求：
+
+1. Alpha 公式设计
+   - 提出 5 个公式化 alpha：alpha1, alpha2, alpha3, alpha4, alpha5。
+   - 每个 alpha 必须是 `df` 中每日特征的确定性函数。
+   - 你可以使用滞后值，例如：
+       df['Close'].shift(1)
+       df['RSI_14'].shift(3)
+       df['SMA_5'].shift(5)
+   - 不得使用任何情感、新闻或文本相关变量（这些数据不存在）。
+
+2. 公式解释：
+   - 对每个 alpha 公式（例如：alpha1）进行详细解释。
+   - 解释公式的构成逻辑，包括它捕捉到的市场行为（例如：趋势跟随、均值回归）。
+   - 解释每个特征（例如：`df['Close']`、`df['RSI_14']`、`df['SMA_20']`）如何为预测做出贡献。
+   - 公式背后的思想（例如：该公式设计用来捕捉动量、均值回归或市场的超买/超卖状态等）。
+
+3. 设计原则：
+   - Alpha 公式应该是可解释的，并且能够反映常见的交易理念，例如：
+       • 趋势跟随（例如：价格在移动平均线之上/之下）
+       • 均值回归（例如：价格偏离某一带之后回归）
+       • 动量（例如：短期与长期动量的关系）
+       • 成交量确认（例如：OBV、基于成交量的过滤器）
+       • 超买/超卖状态（例如：RSI）
+   - 鼓励多样性：每个 alpha 应该捕捉市场行为的不同方面，
+     不要只是稍微调整系数重复同样的结构。
+
+4. 实现约束
+   - 假设你有一个名为 `df` 的 pandas DataFrame，列如上所列。
+   - 使用可以在 `df` 上计算的合法 Python 表达式，例如：
+       (df['Close'] - df['SMA_20']) / df['SMA_20']
+       (df['RSI_14'] - 50) / 50
+       (df['MACD'] - df['MACD_Signal'])
+       (df['OBV'] - df['OBV'].shift(5))
+   - 你可以使用如 max()、min()、abs() 等函数，以及逻辑运算符 (&, |, ~)。
+   - 不要在公式中使用伪代码、循环或自然语言描述。
+
+示例（仅供参考，请不要直接使用）：
+
+alpha_example = (df['Close'] - df['SMA_20']) / df['SMA_20'] + 0.3 * (df['RSI_14'] - 50) / 50
+
+输出格式（非常重要）：
+
+只输出 5 个 alpha 定义，每个公式一行，格式如下：
+
+alpha1 = <使用 df[...] 的 Python 表达式>
+alpha2 = <使用 df[...] 的 Python 表达式>
+alpha3 = <使用 df[...] 的 Python 表达式>
+alpha4 = <使用 df[...] 的 Python 表达式>
+alpha5 = <使用 df[...] 的 Python 表达式>
+
+然后，为每个 alpha 公式提供解释：
+
+explain for alpha1：
+<解释公式的逻辑，特征的作用，捕捉的市场行为>
+
+explain for alpha2：
+<...>
+
+...

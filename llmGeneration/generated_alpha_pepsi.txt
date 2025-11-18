@@ -1,0 +1,20 @@
+alpha1 = (df['Close'] - df['SMA_20']) / df['SMA_20']  
+alpha2 = (df['RSI_14'] - 0.5) * (df['Close'] - df['BB_Lower']) / (df['BB_Upper'] - df['BB_Lower'] + 1e-6)  
+alpha3 = (df['MOM_3'] - df['MOM_10']) * (df['OBV'] - df['OBV'].shift(5)) / (df['Volume'].rolling(10).std() + 1e-6)  
+alpha4 = (df['MACD'] - df['MACD_Signal']) * (df['Close'] > df['EMA_10']).astype(int)  
+alpha5 = (df['High'] - df['Low']) / (df['Close'].shift(1) - df['Open'].shift(1) + 1e-6) * (df['RSI_14'] < 0.3).astype(int)  
+
+explain for alpha1：  
+该公式衡量收盘价相对于20日简单移动平均线（SMA_20）的标准化偏离程度，捕捉中长期趋势状态。当价格高于SMA_20时，alpha1为正，表明处于上升趋势，可能预示未来继续上涨；反之则为负，反映下行趋势。由于数据已标准化，该信号本质上是趋势跟随型，利用价格与长期均线的关系判断动量方向。
+
+explain for alpha2：  
+此alpha结合相对强弱指数（RSI_14）和布林带位置，旨在捕捉均值回归机会。RSI_14减去0.5（对应原始RSI的50中轴）识别超买/超卖状态；同时，(Close - BB_Lower)/(BB_Upper - BB_Lower)将价格映射到布林带区间内（近似0~1），接近下轨时值小，接近上轨时值大。两者相乘后，当RSI处于低位（<0.5）且价格靠近布林带下轨时，alpha2为较大的负值，暗示超卖后的反弹潜力，体现均值回归逻辑。
+
+explain for alpha3：  
+该信号融合短期与长期动量差异（MOM_3 - MOM_10）和成交量确认（OBV变化）。正的动量差表明近期加速上涨，而OBV过去5日增长说明成交量支持价格上涨。分母使用Volume的10日滚动标准差进行归一化，增强稳定性。整体捕捉“动量增强+量能确认”的协同效应，属于动量强化策略，避免无量空涨的假信号。
+
+explain for alpha4：  
+此alpha基于MACD柱状图（MACD - MACD_Signal）并叠加价格在10日指数移动平均线（EMA_10）之上的过滤条件。MACD柱扩大通常预示趋势加强，而价格在EMA_10之上确认短期多头排列。仅当价格处于EMA_10上方时保留MACD信号，否则置零，从而过滤掉下跌趋势中的虚假MACD金叉，提升趋势跟随信号的可靠性。
+
+explain for alpha5：  
+该公式聚焦极端超卖后的反转机会。首先，(High - Low)代表当日真实波幅，除以前一日的实体（Close.shift(1) - Open.shift(1)）衡量波动放大程度；再乘以(RSI_14 < 0.3)的指示函数，仅在RSI极度超卖（原始RSI < 30）时激活信号。当市场在超卖区域出现异常高波动，可能预示恐慌性抛售结束、反弹临近，属于反转交易策略，强调低风险入场点。

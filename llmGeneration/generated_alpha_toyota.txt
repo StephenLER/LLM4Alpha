@@ -1,0 +1,20 @@
+alpha1 = (df['Close'] - df['SMA_20']) / df['SMA_20']  
+alpha2 = df['RSI_14'] * (df['BB_Upper'] - df['Close']) / (df['BB_Upper'] - df['BB_Lower'])  
+alpha3 = (df['MACD'] - df['MACD_Signal']) * df['Volume']  
+alpha4 = (df['MOM_10'] - df['MOM_3']) * (df['OBV'] - df['OBV'].shift(5)) / (df['OBV'].shift(5) + 1e-6)  
+alpha5 = (df['Close'] - df['Low']) / (df['High'] - df['Low'] + 1e-6) * (df['EMA_10'] > df['SMA_20']).astype(int)
+
+explain for alpha1：  
+该公式衡量价格相对于20日简单移动平均线（SMA_20）的偏离程度，是经典的趋势跟随信号。当收盘价高于SMA_20时，alpha1为正，表明处于上升趋势，预示未来可能继续上涨；反之则为负，暗示下跌趋势。由于数据已标准化，该比值仍能有效捕捉相对位置信息，适用于识别中期趋势强度。
+
+explain for alpha2：  
+此alpha结合RSI_14与布林带位置，旨在捕捉均值回归机会中的超卖反弹信号。RSI_14反映超买/超卖状态（负值表示偏弱），而(BB_Upper - Close)/(BB_Upper - BB_Lower)衡量价格在布林带中的相对位置（接近下轨时该值趋近1）。两者相乘后，当价格处于布林带下轨附近且RSI显示超卖时，alpha2为较大的正值，预示价格可能向上回归均值。
+
+explain for alpha3：  
+该公式利用MACD柱状图（MACD - MACD_Signal）与成交量的乘积，实现动量与量能确认的结合。MACD柱扩大通常代表趋势加速，若同时伴随高成交量（Volume为正且较大），则趋势可靠性增强。由于Volume已标准化，正值表示当日成交活跃，因此alpha3在趋势启动并获量能支持时输出强信号，有助于过滤假突破。
+
+explain for alpha4：  
+此alpha融合短期与长期动量差异及OBV的变化率，捕捉动量反转与资金流向的一致性。MOM_10 - MOM_3为正时，表明中期动量强于短期，可能存在动量衰减或反转；若此时OBV较5日前显著上升（资金持续流入），则可能预示价格将跟随资金流上涨。通过OBV变化率归一化，避免量级干扰，聚焦资金趋势与价格动量的背离或协同。
+
+explain for alpha5：  
+该公式结合日内价格位置（(Close - Low)/(High - Low)）与EMA_10和SMA_20的多空排列，识别强势上涨日。前者衡量收盘价在当日波动区间的相对高位（接近1表示强势收盘），后者通过EMA_10 > SMA_20判断短期趋势强于中期（典型多头排列）。两者相乘后，仅在趋势向上且当日收于高位时产生高正值，有效捕捉具有持续上涨动能的交易日。

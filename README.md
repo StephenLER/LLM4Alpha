@@ -1,3 +1,26 @@
+### 当前进度：
+1、从Stooq中下载五个公司的数据存放在data文件夹下    `data_OHLCV.py`
+* apple,hsbc,pepsi,tencent,toyota
+
+2、对数据做特征工程
+* 使用 `pandas-ta` 计算多种指标（表 1）：
+
+  * SMA_5、SMA_20
+  * EMA_10
+  * Momentum_3、Momentum_10
+  * RSI_14
+  * MACD、MACD_Signal
+  * BB_Upper、BB_Lower
+  * OBV 
+
+3、构建提示词  `prepare_prompt.py`
+* 生成的提示词放在prompts文件夹下
+
+4、调用大模型进行生成
+* 生成的alpha在llmGeneration下，目前调用的是qwen3-max的api
+
+
+----------------------------------------------
 整体上，这篇文章的工作流可以看成一个**自上而下的流水线**：
 先做数据与特征，再让 LLM 写公式化 alpha，然后用这些 alpha 去喂 Transformer（加上一些对比模型）做**次日收盘价预测**。
 
