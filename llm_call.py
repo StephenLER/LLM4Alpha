@@ -4,7 +4,7 @@ from pathlib import Path
 
 # 设置 OpenAI 客户端
 client = OpenAI(
-    api_key=os.getenv("DASHSCOPE_API_KEY"),  # 你的 API Key
+    api_key="",  #  API Key
     base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
 )
 
@@ -28,7 +28,7 @@ for prompt_file in os.listdir(PROMPT_DIR):
         # 调用 OpenAI API 进行生成
         print(f"Generating alpha formulas for {company_name}...")
         completion = client.chat.completions.create(
-            model="qwen3-max",  # 你要使用的模型
+            model="qwen3-max",  
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": prompt_content},  # 提示词内容
