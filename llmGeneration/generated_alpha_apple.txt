@@ -5,10 +5,14 @@ alpha4 = (df['OBV'] - df['OBV'].shift(5)) * (df['Close'] > df['Open']).astype(in
 alpha5 = -1.0 * (df['High'] - df['Low']) / (df['Close'].shift(1) + 1e-6) * (df['RSI_14'] > 0.7).astype(int) + (df['Close'] - df['Close'].shift(3)) / (df['Close'].shift(3) + 1e-6) * (df['RSI_14'] < 0.3).astype(int)
 
 explain for alpha1：  
-该 alpha 捕捉趋势跟随信号，结合价格相对于长期均线（SMA_20）的位置以及短期动量（EMA_10 相对于 SMA_20 的偏离）。当收盘价高于 SMA_20 且 EMA_10 上穿 SMA_20 时，表明短期趋势强于长期趋势，预示价格上涨动能。标准化后的差值形式增强了可比性，适用于 z-score 标准化数据。
+该 alpha 捕捉趋势跟随信号，结合价格相对于长期均线（SMA_20）的位置以及短期动量（EMA_10 相对于 SMA_20 的偏离）。
+当收盘价高于 SMA_20 且 EMA_10 上穿 SMA_20 时，表明短期趋势强于长期趋势，预示价格上涨动能。标准化后的差值形式增强了可比性，
+适用于 z-score 标准化数据。
 
 explain for alpha2：  
-此 alpha 融合超买/超卖状态（RSI_14）与布林带位置，用于识别均值回归机会。RSI 偏离中性水平（0.5）反映市场情绪，而 (Close - BB_Lower)/(BB_Upper - BB_Lower) 表示价格在布林带内的相对位置。当 RSI 高但价格靠近下轨（或反之），可能预示反转；而两者同向（如高 RSI 且价格近上轨）则强化趋势延续信号。整体设计兼顾动量与波动区间归一化。
+此 alpha 融合超买/超卖状态（RSI_14）与布林带位置，用于识别均值回归机会。
+RSI 偏离中性水平（0.5）反映市场情绪，而 (Close - BB_Lower)/(BB_Upper - BB_Lower) 表示价格在布林带内的相对位置。
+当 RSI 高但价格靠近下轨（或反之），可能预示反转；而两者同向（如高 RSI 且价格近上轨）则强化趋势延续信号。整体设计兼顾动量与波动区间归一化。
 
 explain for alpha3：  
 该 alpha 结合 MACD 柱状图（MACD - Signal）与短期和中期动量差值，捕捉加速动量变化。MACD 差值反映趋势强度变化，而 MOM_3 代表近期动量，MOM_10 滞后3日代表中期动量背景。若近期动量显著强于中期（如反弹初期），叠加 MACD 金叉，可预示上涨加速。此公式强调动量的二阶变化，适合识别趋势启动点。
